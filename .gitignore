@@ -2,7 +2,8 @@
 
 # vikus-viewer
 vikus-viewer/datas
-vikus-viewer/data
+vikus-viewer/data/fulltext
+vikus-viewer/data/images
 
 # vikus-viewer-script
 vikus-viewer-script/node_modules
@@ -13,6 +14,7 @@ vikus-viewer-script/images/data
 
 # evoint-scripts
 /evoint-scripts/publications_backup.json
+/evoint-scripts/data/
 
 # from https://github.com/github/gitignore/blob/master/Python.gitignore
 # Byte-compiled / optimized / DLL files

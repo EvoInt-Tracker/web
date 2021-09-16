@@ -1,9 +1,11 @@
-years = {}
+from collections import OrderedDict
+
+years = OrderedDict()
 
 
 class Year:
     def __init__(self, year, titel='', text='', extra=''):
-        self.year = year
+        self.year = str(year)
         self.titel = titel
         self.text = text
         self.extra = extra
