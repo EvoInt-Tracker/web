@@ -87,6 +87,8 @@ class Publication:
             result = self.filter_symbols(result)
         except:
             print(f'{self.id} - no fulltext')
+
+        result = result.replace('International Joint Conference on Artificial Intelligence', ' ')
         return result.lower()
 
     def filter_symbols(self, text):
