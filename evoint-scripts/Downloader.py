@@ -12,8 +12,6 @@ from pdf2image import convert_from_path
 from urllib.error import HTTPError
 
 
-
-
 def parse_title(title):
     title = title.replace('\n', ' ')
     title = title.replace('\t', ' ')
@@ -52,6 +50,7 @@ def download(pub):
     # os.chdir("..")
 
 
+# TODO: From 2018 on, link ends with "/". so for those years ..split("/")[-2]
 def is_link_to_volume(link: str):
     last = link.split("/")[-1]
     return last[:4].isdigit()
@@ -70,10 +69,10 @@ def get_available_volumes(index_page_url=None):
             if index_page_url not in current_link:
                 current_link = urllib.parse.urljoin(index_page_url, current_link)
             result.append(current_link)
-    return result.reverse()
+    # result.reverse()
+    return result
 
 
-# Single Volume: 1969 - 1975 & 2003 - ...
 def download_from_single_volume_years():
 
     base_pdf_path = '../vikus-viewer/data/fulltext/pdf/'
@@ -83,11 +82,11 @@ def download_from_single_volume_years():
 
     for volume_link in available_volumes:
         year = volume_link.split("/")[-1][:4]
+        Year(year)
         os.makedirs(base_pdf_path + year, exist_ok=True)
-        year_instance = years[year] if year in years.keys() else Year(year)
 
-        file_links = []
-        year_url = urllib.parse.urljoin(base_url, str(year_instance.year))
+        visited_links = []
+        year_url = urllib.parse.urljoin(base_url, year)
         response = urlopen(volume_link)  # opens the URL
         page_source = response.read()
         soup = BeautifulSoup(page_source, 'html.parser')
@@ -95,23 +94,34 @@ def download_from_single_volume_years():
             current_link = link.get('href')
             if "www.ijcai.org" not in current_link:
                 current_link = urllib.parse.urljoin("https://www.ijcai.org", current_link)
-            if current_link.endswith('.pdf') and current_link not in file_links:
-                file_links.append(urllib.parse.urljoin(year_url, current_link))
+            if current_link.endswith('.pdf') and current_link not in visited_links:
+                visited_links.append(urllib.parse.urljoin(year_url, current_link))
 
                 if not urlparse(current_link).scheme:
                     current_link = 'https://' + current_link
 
                 pub_id = next_pub_id()
                 title = parse_title(link.text)
-                path_to_pdf = base_pdf_path + str(year_instance.year) + '/' + str(pub_id) + '.pdf'
-                print(f'{year_instance.year}:')
+                authors = ""
+
+                if title == "PDF":  # TODO: missing for years 2015, 2016
+                    if int(year) >= 2017:
+                        paper_wrapper = link.find_parent("div", "paper_wrapper")
+                        title = paper_wrapper.find("div", "title")
+                        title = parse_title(title.text)
+                        authors = paper_wrapper.find("div", "authors").text
+
+                path_to_pdf = base_pdf_path + str(year) + '/' + str(pub_id) + '.pdf'
+                print(f'{year}:')
                 print(f'Creating Publication_Object "{title}"')
                 publication = Publication(pub_id=pub_id,
                                           title=title,
-                                          year=year_instance.year,
+                                          authors=authors,
+                                          year=year,
                                           origin_path=current_link,
                                           path_to_pdf=path_to_pdf)
 
+                # TODO: move to own method iterating over publications
                 # download(publication)
 
                 # TODO: new Method 'add_to_data_csv(publication)'

@@ -63,9 +63,10 @@ KEYWORDS = [
 
 
 class Publication:
-    def __init__(self, pub_id, title, year, origin_path, path_to_pdf):
-        self.id = pub_id  # int to count up
+    def __init__(self, pub_id, title, year, origin_path, path_to_pdf, authors=None):
+        self.id = pub_id
         self.title = title
+        self.authors = authors
         self.keywords = []
         self.year = year
         self.origin_path = origin_path

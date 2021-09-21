@@ -55,6 +55,12 @@
         "type": "text"
       },
       {
+        "name": "Authors",
+        "source": "_authors",
+        "display": "column",
+        "type": "text"
+      },
+      {
         "name": "Keywords",
         "source": "_keywords",
         "display": "column",
@@ -73,10 +79,10 @@
         "type": "link"
       },
       {
-        "name": "Path",
+        "name": "Fulltext on ..",
         "source": "_origin_path",
         "display": "column",
-        "type": "text"
+        "type": "link"
       },
       {
         "name": "Abstract",

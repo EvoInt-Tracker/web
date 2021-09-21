@@ -11,12 +11,28 @@ def create_data_csv(dct):
     with open('../vikus-viewer/data/data.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-        csvwriter.writerow(['keywords'] + ['year'] + ['id'] + ['_title'] + ['_abstract'] + ['_origin_path'] + ['_display_path_to_pdf'] + ['_path_to_pdf'])
+        csvwriter.writerow(['keywords'] +
+                           ['year'] +
+                           ['id'] +
+                           ['_title'] +
+                           ['_authors'] +
+                           ['_abstract'] +
+                           ['_origin_path'] +
+                           ['_display_path_to_pdf'] +
+                           ['_path_to_pdf'])
         for publication in order_by_id(dct):
             temp_a = publication.path_to_pdf.split('/')[-5:]
             display_path_to_pdf = '/'.join(temp_a)
             keywords = ','.join(publication.keywords) if len(publication.keywords) > 0 else 'None'
-            csvwriter.writerow([f'{keywords}'] + [publication.year] + [publication.id] + [publication.title] + ['abstract comes here'] + ['publication.get_right_path()'] + [display_path_to_pdf] + [publication.path_to_pdf])
+            csvwriter.writerow([f'{keywords}'] +
+                               [publication.year] +
+                               [publication.id] +
+                               [publication.title] +
+                               [publication.authors] +
+                               ['abstract comes here'] +
+                               [publication.origin_path] +
+                               [display_path_to_pdf] +
+                               [publication.path_to_pdf])
 
 
 # TODO: create_timeline_csv(dct_years):
