@@ -29,19 +29,19 @@ def next_pub_id():
     return result.zfill(4)
 
 
-def download(publication, destination_path):
+def download(pub):
     # check if file already downloaded
-    if Path(publication.path_to_pdf).is_file():
+    if Path(pub.path_to_pdf).is_file():
         return
     try:
-        print(f'Downloading Publication "{publication.title}" \n\tfrom {publication.origin_path}\n')
-        response = urlopen(publication.origin_path)
+        print(f'Downloading Publication "{pub.title}" \n\tfrom {pub.origin_path}\n')
+        response = urlopen(pub.origin_path)
         # TODO: path_to_pdf has to start at data/..., so add vikus-viewer/ here
-        file = open(publication.path_to_pdf, 'wb')
+        file = open(pub.path_to_pdf, 'wb')
         file.write(response.read())
         file.close()
     except HTTPError:
-        print("error writing file: " + publication.origin_path)
+        print("error writing file: " + pub.origin_path)
         pass
 
     # folder_name = str(year) + "_IJCAI"
@@ -91,7 +91,7 @@ def download_from_single_volume_years(desired_years=None):
                                           origin_path=current_link,
                                           path_to_pdf=path_to_pdf)
 
-                download(publication, base_pdf_path)
+                download(publication)
 
                 # TODO: new Method 'add_to_data_csv(publication)'
                 create_data_csv(publications)
