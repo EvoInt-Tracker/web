@@ -50,9 +50,11 @@ def download(pub):
     # os.chdir("..")
 
 
-# TODO: From 2018 on, link ends with "/". so for those years ..split("/")[-2]
 def is_link_to_volume(link: str):
     last = link.split("/")[-1]
+    if not last:
+        last = link.split("/")[-2]
+    print(last)
     return last[:4].isdigit()
 
 
