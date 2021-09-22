@@ -51,61 +51,71 @@ def download(pub):
 
 
 def is_link_to_volume(link: str):
-    last = link.split("/")[-1]
-    if not last:
-        last = link.split("/")[-2]
-    print(last)
-    return last[:4].isdigit()
+    year = link.split("/")[-1]
+    if not year:
+        year = link.split("/")[-2]
+    print(year)
+    return year[:4].isdigit()
 
 
 def get_available_volumes(index_page_url=None):
-    result = []
+    result = set()
     if index_page_url is None:
         index_page_url = "https://www.ijcai.org/past_proceedings/"
     response = urlopen(index_page_url)
     page_source = response.read()
     soup = BeautifulSoup(page_source, 'html.parser')
-    for link in soup.find_all('a'):
+    content = soup.find('div', 'content')
+    for link in content.find_all('a'):
         current_link = link.get('href')
+        if current_link.split("/")[-1] == "2017":
+            current_link = current_link + "/"
         if is_link_to_volume(current_link):
-            if index_page_url not in current_link:
-                current_link = urllib.parse.urljoin(index_page_url, current_link)
-            result.append(current_link)
-    # result.reverse()
-    return result
+            # if index_page_url not in current_link:
+            #     current_link = urllib.parse.urljoin(index_page_url, current_link)
+            if current_link not in result:
+                result.add(current_link)
+    return sorted(result, reverse=True)
 
 
 def download_from_single_volume_years():
 
     base_pdf_path = '../vikus-viewer/data/fulltext/pdf/'
-    base_url = "https://www.ijcai.org/Proceedings/"
+    base_url = "https://www.ijcai.org/past_proceedings/"
 
     available_volumes = get_available_volumes(base_url)
+    print('\n'.join(available_volumes))
 
     for volume_link in available_volumes:
         year = volume_link.split("/")[-1][:4]
+        if not year:
+            year = volume_link.split("/")[-2][:4]
         Year(year)
         os.makedirs(base_pdf_path + year, exist_ok=True)
 
         visited_links = []
-        year_url = urllib.parse.urljoin(base_url, year)
+        # year_url = urllib.parse.urljoin(base_url, year)
         response = urlopen(volume_link)  # opens the URL
         page_source = response.read()
         soup = BeautifulSoup(page_source, 'html.parser')
         for link in soup.find_all('a'):
             current_link = link.get('href')
-            if "www.ijcai.org" not in current_link:
-                current_link = urllib.parse.urljoin("https://www.ijcai.org", current_link)
+            if volume_link not in current_link:
+                current_link = urllib.parse.urljoin(volume_link, current_link)
             if current_link.endswith('.pdf') and current_link not in visited_links:
-                visited_links.append(urllib.parse.urljoin(year_url, current_link))
+                visited_links.append(urllib.parse.urljoin(volume_link, current_link))
 
                 if not urlparse(current_link).scheme:
                     current_link = 'https://' + current_link
 
                 pub_id = next_pub_id()
                 title = parse_title(link.text)
+                if title == "here":
+                    continue
+
                 authors = ""
 
+                # TODO: Followind lines in own Method. Check if link is actually a publication.
                 if title == "PDF":  # TODO: missing for years 2015, 2016
                     if int(year) >= 2017:
                         paper_wrapper = link.find_parent("div", "paper_wrapper")
