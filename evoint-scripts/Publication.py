@@ -90,6 +90,7 @@ class Publication:
             print(f'{self.id} - no fulltext')
 
         result = result.replace('International Joint Conference on Artificial Intelligence', ' ')
+        # keyword 'artificial intelligence' would be in every publication. so the title of the conference needs to be removed
         return result.lower()
 
     def filter_symbols(self, text):
@@ -104,7 +105,6 @@ class Publication:
                 self.keywords.append(keyword)
 
 
-# TODO: not working
 def get_publication_by_title(title):
     for pub in publications.values():
         if pub.title == title:

@@ -15,7 +15,8 @@ vikus-viewer-script/images/data
 # evoint-scripts
 /evoint-scripts/publications_backup.json
 /evoint-scripts/data/
-
+/evoint-scripts/ai/preprocessedReviews.csv
+/evoint-scripts/ai/TF-IDF/0_data.csv
 # from https://github.com/github/gitignore/blob/master/Python.gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/

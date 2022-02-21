@@ -1,5 +1,6 @@
 from Publication import publications, Publication
 import csv
+import sys
 
 
 def order_by_id(dct):
@@ -10,7 +11,6 @@ def order_by_id(dct):
 def create_data_csv(dct):
     with open('../vikus-viewer/data/data.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
         csvwriter.writerow(['keywords'] +
                            ['year'] +
                            ['id'] +
@@ -19,7 +19,8 @@ def create_data_csv(dct):
                            ['_abstract'] +
                            ['_origin_path'] +
                            ['_display_path_to_pdf'] +
-                           ['_path_to_pdf'])
+                           ['_path_to_pdf'] +
+                           ['_fulltext'])
         for publication in order_by_id(dct):
             temp_a = publication.path_to_pdf.split('/')[-5:]
             display_path_to_pdf = '/'.join(temp_a)
@@ -32,7 +33,8 @@ def create_data_csv(dct):
                                ['abstract comes here'] +
                                [publication.origin_path] +
                                [display_path_to_pdf] +
-                               [publication.path_to_pdf])
+                               [publication.path_to_pdf] + [f'{publication.fulltext()}'])
+            print(publication.id)
 
 
 # TODO: create_timeline_csv(dct_years):
@@ -44,12 +46,12 @@ def read_data_csv():
         for line in csvreader:
             Publication(pub_id=line['id'],
                         title=line['_title'],
+                        authors=line['_authors'],
                         year=line['year'],
                         origin_path=line['_origin_path'],
                         path_to_pdf=line['_path_to_pdf'])
 
 
-# TODO: read_timeline_csv():
 
 
 def save_backup():
@@ -65,6 +67,7 @@ def sample():
     Publication('0005', 't2itle', '12993', 'or2igin_path_oh', 'pa2th to some pdf')
 
 
+csv.field_size_limit(sys.maxsize)
 # sample()
 #
 #

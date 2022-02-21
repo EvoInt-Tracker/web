@@ -10,6 +10,7 @@ from pathlib import Path
 
 from pdf2image import convert_from_path
 from urllib.error import HTTPError
+import sys
 
 
 def parse_title(title):
@@ -27,27 +28,28 @@ def next_pub_id():
     return result.zfill(4)
 
 
-def download(pub):
-    # check if file already downloaded
-    if Path(pub.path_to_pdf).is_file():
-        return
-    try:
-        print(f'Downloading Publication "{pub.title}" \n\tfrom {pub.origin_path}\n')
-        response = urlopen(pub.origin_path)
-        # TODO: path_to_pdf has to start at data/..., so add vikus-viewer/ here
-        file = open(pub.path_to_pdf, 'wb')
-        file.write(response.read())
-        file.close()
-    except HTTPError:
-        print("error writing file: " + pub.origin_path)
-        pass
-
-    # folder_name = str(year) + "_IJCAI"
-    # os.makedirs(folder_name)
-    # os.chdir(os.getcwd() + "/" + folder_name)
-    #
-    #
-    # os.chdir("..")
+def download(pubs=None):
+    if pubs is None:
+        pubs = publications
+    total = len(pubs.values())
+    for key, pub in pubs.items():
+        # check if file is already downloaded
+        if Path(pub.path_to_pdf).is_file():
+            continue
+        try:
+            print(f'{str(round((float(key)/total) * 100, 2))}% ({key}/{total}) - Downloading Publication "{pub.title}" \n\tfrom {pub.origin_path}\n')
+            response = urlopen(pub.origin_path)
+            # TODO: path_to_pdf has to start at data/..., so add vikus-viewer/ here
+            os.makedirs(pub.path_to_pdf[:-8], exist_ok=True)
+            file = open(pub.path_to_pdf, 'wb')
+            file.write(response.read())
+            file.close()
+        except HTTPError:
+            print("error writing file: " + pub.origin_path)
+            continue
+        except TimeoutError:
+            print("TimeoutError")
+            continue
 
 
 def is_link_to_volume(link: str):
@@ -115,7 +117,7 @@ def download_from_single_volume_years():
 
                 authors = ""
 
-                # TODO: Followind lines in own Method. Check if link is actually a publication.
+                # TODO: Following lines in own Method. Check if link is actually a publication.
                 if title == "PDF":  # TODO: missing for years 2015, 2016
                     if int(year) >= 2017:
                         paper_wrapper = link.find_parent("div", "paper_wrapper")
@@ -133,37 +135,41 @@ def download_from_single_volume_years():
                                           origin_path=current_link,
                                           path_to_pdf=path_to_pdf)
 
-                # TODO: move to own method iterating over publications
-                # download(publication)
+                download(publication)
 
                 # TODO: new Method 'add_to_data_csv(publication)'
                 create_data_csv(publications)
 
 
+# TODO: actually use var output_path on save
 def pdf_to_thumbnail(dct):
     for publication in dct.values():
         path = Path(publication.path_to_pdf)
         output_path = Path('data/thumbnails/' + str(publication.id) + '.png')
         if path.is_file() and not output_path.is_file():
-            print(f'Creating Thumbnail for Publication "{publication.title}"')
+            print(f'{publication.id} - Creating Thumbnail for Publication "{publication.title}"')
             page = convert_from_path(path, 200, first_page=1, last_page=1)
             page[0].save('data/thumbnails/' + str(publication.id) + '.png', 'PNG')
 
 
 def create_vikus_textures_and_sprites():
-    os.system("node ../vikus-viewer-script/bin/textures 'data/thumbnails/*.png' --output '../vikus-viewer/data/images'")
+    # for pub in publications.values():
+    #     os.system(f'node ../vikus-viewer-script/bin/textures "data/thumbnails/{pub.id}.png" --output "../vikus-viewer/data/images"')
+    # os.system("ulimit -n 16100; node ../vikus-viewer-script/bin/textures 'data/thumbnails/*.png' --output '../vikus-viewer/data/images'")
+    os.system("vikus-viewer-script 'data/thumbnails/*.png' --output '../vikus-viewer/data/images' --spriteSize 90")
 
 
-download_from_single_volume_years()
+# download_from_single_volume_years()
 
-# read_data_csv()
+read_data_csv()
+# download()
 # create_data_csv(publications)
 # pdf_to_thumbnail(publications)
 # create_vikus_textures_and_sprites()
 
 # get_keywords_from_csv()
-# for publication in publications.values():
-#     print(publication.id)
-#     fulltext = publication.fulltext()
-#     publication.set_keywords(fulltext)
-# create_data_csv(publications)
+for publication in publications.values():
+    print(publication.id)
+    fulltext = publication.fulltext()
+    publication.set_keywords(fulltext)
+create_data_csv(publications)
